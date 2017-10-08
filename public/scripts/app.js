@@ -20,11 +20,30 @@ var IndecisionApp = function (_React$Component) {
     _this.handleDeleteOption = _this.handleDeleteOption.bind(_this);
     _this.handlePick = _this.handlePick.bind(_this);
     _this.handleAddOption = _this.handleAddOption.bind(_this);
-    _this.state = { options: props.options };
+    _this.state = { options: [] };
     return _this;
   }
 
   _createClass(IndecisionApp, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      try {
+        var options = JSON.parse(localStorage.getItem('options'));
+        if (options) {
+          this.setState(function () {
+            return { options: options };
+          });
+        }
+      } catch (e) {}
+    }
+  }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps, prevState) {
+      if (prevState.options.length !== this.state.options.length) {
+        localStorage.setItem('options', JSON.stringify(this.state.options));
+      }
+    }
+  }, {
     key: 'handleDeleteOptions',
     value: function handleDeleteOptions() {
       this.setState(function () {
@@ -89,10 +108,6 @@ var IndecisionApp = function (_React$Component) {
   return IndecisionApp;
 }(React.Component);
 
-IndecisionApp.defaultProps = {
-  options: []
-};
-
 var Header = function Header(props) {
   return React.createElement(
     'div',
@@ -136,6 +151,11 @@ var Options = function Options(props) {
       'button',
       { onClick: props.handleDeleteOptions },
       'Remove all'
+    ),
+    props.options.length === 0 && React.createElement(
+      'p',
+      null,
+      'Please add an option to get started!'
     ),
     props.options.map(function (option) {
       return React.createElement(Option, {
@@ -182,10 +202,12 @@ var AddOption = function (_React$Component2) {
       e.preventDefault();
       var option = e.target.elements.optionText.value.trim();
       var error = this.props.handleAddOption(option);
-      e.target.elements.optionText.value = '';
       this.setState(function () {
         return { error: error };
       });
+      if (!error) {
+        e.target.elements.optionText.value = '';
+      }
     }
   }, {
     key: 'render',
